@@ -1,4 +1,14 @@
-def add(a, b):
-    return a + b
+from flask import Flask
 
-print("Result:", add(10, 20))
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Hello from Jenkins + Docker + AWS!"
+
+@app.route("/health")
+def health():
+    return "OK"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
