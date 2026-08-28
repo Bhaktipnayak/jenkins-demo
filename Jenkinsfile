@@ -54,7 +54,16 @@ pipeline {
             steps {
                 sh '''
                     echo "Building Docker image..."
-                    docker build -t jenkins-demo:latest .
+                    docker build -t bhakti3435/jenkins-demo:latest .
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh '''
+                    echo "Pushing Docker image to Docker Hub..."
+                    docker push bhakti3435/jenkins-demo:latest
                 '''
             }
         }
@@ -69,7 +78,7 @@ pipeline {
                     docker run -d \
                         --name jenkins-demo \
                         -p 5000:5000 \
-                        jenkins-demo:latest
+                        bhakti3435/jenkins-demo:latest
 
                     docker update --restart unless-stopped jenkins-demo
 
