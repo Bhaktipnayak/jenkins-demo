@@ -10,7 +10,9 @@ def add(a, b):
 @app.route('/')
 def home():
     return "Jenkins Docker deployment is working!"
-
+@app.route('/health')
+def health():
+    return "OK"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
