@@ -1,32 +1,22 @@
 pipeline {
     agent any
 
-    stages {
+    environment {
+        ECR_REGISTRY = '148598146686.dkr.ecr.ap-south-1.amazonaws.com'
+        IMAGE_NAME   = 'jenkins-demo'
+        IMAGE        = "${ECR_REGISTRY}/${IMAGE_NAME}:latest"
+        AWS_REGION   = 'ap-south-1'
+    }
 
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/Bhaktipnayak/jenkins-demo.git'
-            }
-        }
+    stages {
 
         stage('Show Files') {
             steps {
                 sh '''
                     echo "Files from GitHub:"
                     ls -la
-
                     echo "Inside jenkins-demo:"
                     ls -la jenkins-demo
-                '''
-            }
-        }
-
-        stage('Run Application') {
-            steps {
-                sh '''
-                    echo "Skipping direct application run..."
-                    echo "Application will be run inside Docker."
                 '''
             }
         }
@@ -34,18 +24,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    echo "Creating Python virtual environment..."
-
-                    python3 -m venv venv
-
-                    echo "Installing dependencies..."
-                    ./venv/bin/pip install -r jenkins-demo/requirements.txt
-
-                    echo "Installing pytest..."
-                    ./venv/bin/pip install pytest
-
                     echo "Running tests..."
-                    ./venv/bin/pytest -v jenkins-demo/test_app.py
+                    python3 -m pytest -v jenkins-demo/test_app.py
                 '''
             }
         }
@@ -54,37 +34,41 @@ pipeline {
             steps {
                 sh '''
                     echo "Building Docker image..."
-                    docker build -t bhakti3435/jenkins-demo:latest .
+                    docker build -t $IMAGE .
                 '''
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Login to ECR') {
             steps {
                 sh '''
-                    echo "Pushing Docker image to Docker Hub..."
-                    docker push bhakti3435/jenkins-demo:latest
+                    echo "Logging in to Amazon ECR..."
+                    aws ecr get-login-password --region $AWS_REGION | \
+                    docker login --username AWS --password-stdin $ECR_REGISTRY
                 '''
             }
         }
 
-        stage('Deploy Docker Container') {
+        stage('Push to ECR') {
             steps {
                 sh '''
-                    echo "Deploying application..."
+                    echo "Pushing image to ECR..."
+                    docker push $IMAGE
+                '''
+            }
+        }
 
-                    docker rm -f jenkins-demo 2>/dev/null || true
+        stage('Deploy with Docker Compose') {
+            steps {
+                sh '''
+                    echo "Pulling latest image..."
+                    docker compose pull
 
-                    docker run -d \
-                        --name jenkins-demo \
-                        -p 5000:5000 \
-                        bhakti3435/jenkins-demo:latest
+                    echo "Deploying with Docker Compose..."
+                    docker compose up -d
 
-                    docker update --restart unless-stopped jenkins-demo
-
-                    echo "Application deployed!"
-
-                    docker ps
+                    echo "Running containers:"
+                    docker compose ps
                 '''
             }
         }
