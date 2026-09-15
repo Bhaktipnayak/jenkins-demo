@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 
 def add(a, b):
-    return a + b + 5
+    return a + b 
 
 
 @app.route('/')
