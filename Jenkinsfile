@@ -60,19 +60,22 @@ pipeline {
         }
 
         stage('Deploy with Docker Compose') {
-            steps {
-                sh '''
-                    echo "Pulling latest image..."
-                    docker compose pull
+    steps {
+        sh '''
+            echo "Removing old container..."
+            docker rm -f jenkins-demo 2>/dev/null || true
 
-                    echo "Deploying with Docker Compose..."
-                    docker compose up -d
+            echo "Pulling latest image..."
+            docker compose pull
 
-                    echo "Running containers:"
-                    docker compose ps
-                '''
-            }
-        }
+            echo "Deploying with Docker Compose..."
+            docker compose up -d --remove-orphans
+
+            echo "Running containers:"
+            docker compose ps
+        '''
+    }
+}
 
         stage('Health Check') {
             steps {
