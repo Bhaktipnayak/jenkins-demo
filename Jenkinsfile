@@ -22,13 +22,16 @@ pipeline {
         }
 
         stage('Run Tests') {
-            steps {
-                sh '''
-                    echo "Running tests..."
-                    python3 -m pytest -v jenkins-demo/test_app.py
-                '''
-            }
-        }
+    steps {
+        sh '''
+            echo "Installing test dependencies..."
+            python3 -m pip install --user -r jenkins-demo/requirements.txt
+
+            echo "Running tests..."
+            python3 -m pytest -v jenkins-demo/test_app.py
+        '''
+    }
+}
 
         stage('Build Docker Image') {
             steps {
