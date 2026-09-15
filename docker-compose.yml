@@ -1,0 +1,7 @@
+services:
+  app:
+    image: 148598146686.dkr.ecr.ap-south-1.amazonaws.com/jenkins-demo:latest
+    container_name: jenkins-demo
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
