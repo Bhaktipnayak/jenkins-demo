@@ -24,11 +24,9 @@ pipeline {
         stage('Run Tests') {
     steps {
         sh '''
-            echo "Installing test dependencies..."
-            python3 -m pip install --user -r jenkins-demo/requirements.txt
+            echo "Running tests using existing virtual environment..."
 
-            echo "Running tests..."
-            python3 -m pytest -v jenkins-demo/test_app.py
+            ./venv/bin/python -m pytest -v jenkins-demo/test_app.py
         '''
     }
 }
